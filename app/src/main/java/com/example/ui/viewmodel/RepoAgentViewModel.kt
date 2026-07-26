@@ -5,6 +5,7 @@ import android.speech.tts.TextToSpeech
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.GeminiClient
+import com.example.data.api.RenderPostgresSyncClient
 import com.example.data.local.AppDatabase
 import com.example.data.local.ChatMessageEntity
 import com.example.data.local.UserPreferencesEntity
@@ -205,6 +206,15 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
         _postgresUrl.value = url
         viewModelScope.launch {
             prefDao.savePreference(UserPreferencesEntity("postgres_url", url))
+            // Perform programmatic connection test and sync
+            RenderPostgresSyncClient.testConnection(url)
+            val allPrefs = listOf(
+                UserPreferencesEntity("github_token", _githubToken.value),
+                UserPreferencesEntity("github_user", _githubUser.value),
+                UserPreferencesEntity("github_repo", _githubRepo.value),
+                UserPreferencesEntity("postgres_url", url)
+            )
+            RenderPostgresSyncClient.syncPreferences(url, allPrefs)
         }
     }
 
@@ -418,7 +428,11 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             currentList.add(msg)
         }
         _messages.value = currentList
-        dao.insertMessage(toEntity(msg))
+        val entity = toEntity(msg)
+        dao.insertMessage(entity)
+        if (_postgresUrl.value.isNotBlank()) {
+            RenderPostgresSyncClient.syncChatMessage(_postgresUrl.value, entity)
+        }
     }
 
     private suspend fun updateAiMessage(id: String, update: (ChatMessage) -> ChatMessage) {
