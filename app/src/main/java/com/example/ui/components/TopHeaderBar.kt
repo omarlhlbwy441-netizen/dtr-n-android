@@ -30,7 +30,8 @@ fun TopHeaderBar(
     branchName: String = "الفرع الرئيسي",
     liveUrl: String = "https://dtr-no.onrender.com",
     onWorkspaceClick: () -> Unit = {},
-    onLiveCallClick: () -> Unit = {}
+    onLiveCallClick: () -> Unit = {},
+    onGitHubSettingsClick: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -108,17 +109,20 @@ fun TopHeaderBar(
                         }
                     }
 
+                    // GitHub Settings Button
                     Box(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(GoldPrimary),
+                            .background(GoldPrimary)
+                            .clickable { onGitHubSettingsClick() },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "A",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "GitHub & Deploy Settings",
+                            tint = Color.Black,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

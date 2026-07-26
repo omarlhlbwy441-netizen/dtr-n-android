@@ -50,6 +50,23 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isLiveCallActive = MutableStateFlow(false)
     val isLiveCallActive: StateFlow<Boolean> = _isLiveCallActive.asStateFlow()
 
+    // DTR Hands-free Voice Assistant State
+    private val _isDtrVoiceAssistantActive = MutableStateFlow(false)
+    val isDtrVoiceAssistantActive: StateFlow<Boolean> = _isDtrVoiceAssistantActive.asStateFlow()
+
+    // GitHub & Deploy Modal State
+    private val _isGitHubModalActive = MutableStateFlow(false)
+    val isGitHubModalActive: StateFlow<Boolean> = _isGitHubModalActive.asStateFlow()
+
+    private val _githubToken = MutableStateFlow("ghp_xxxxxxxxxxxxxxxxxxxx")
+    val githubToken: StateFlow<String> = _githubToken.asStateFlow()
+
+    private val _githubUser = MutableStateFlow("omarlhlbwy441-netizen")
+    val githubUser: StateFlow<String> = _githubUser.asStateFlow()
+
+    private val _githubRepo = MutableStateFlow("dtr-n-fixed")
+    val githubRepo: StateFlow<String> = _githubRepo.asStateFlow()
+
     init {
         // Initialize Android TextToSpeech for Arabic voice readout
         try {
@@ -134,6 +151,37 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun closeLiveCall() {
         _isLiveCallActive.value = false
+    }
+
+    // DTR Hands-free Voice Assistant Handlers
+    fun openDtrVoiceAssistant() {
+        _isDtrVoiceAssistantActive.value = true
+    }
+
+    fun closeDtrVoiceAssistant() {
+        _isDtrVoiceAssistantActive.value = false
+    }
+
+    // GitHub & Deploy Modal Handlers
+    fun openGitHubModal() {
+        _isGitHubModalActive.value = true
+    }
+
+    fun closeGitHubModal() {
+        _isGitHubModalActive.value = false
+    }
+
+    fun saveGitHubConfig(token: String, user: String, repo: String) {
+        _githubToken.value = token
+        _githubUser.value = user
+        _githubRepo.value = repo
+    }
+
+    fun wipeMemory() {
+        viewModelScope.launch {
+            dao.clearAll()
+            seedInitialState()
+        }
     }
 
     // TextToSpeech Playback

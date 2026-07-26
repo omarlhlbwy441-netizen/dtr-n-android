@@ -51,6 +51,12 @@ fun SmartAgentApp(
     val attachedFileName by viewModel.attachedFileName.collectAsState()
     val isRecordingVoice by viewModel.isRecordingVoice.collectAsState()
     val isLiveCallActive by viewModel.isLiveCallActive.collectAsState()
+    val isDtrVoiceAssistantActive by viewModel.isDtrVoiceAssistantActive.collectAsState()
+    val isGitHubModalActive by viewModel.isGitHubModalActive.collectAsState()
+
+    val githubToken by viewModel.githubToken.collectAsState()
+    val githubUser by viewModel.githubUser.collectAsState()
+    val githubRepo by viewModel.githubRepo.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -81,7 +87,8 @@ fun SmartAgentApp(
                 projectName = "العميل الذكي - dtr-n-fixed",
                 branchName = "الفرع الرئيسي",
                 liveUrl = "https://dtr-no.onrender.com",
-                onLiveCallClick = { viewModel.openLiveCall() }
+                onLiveCallClick = { viewModel.openLiveCall() },
+                onGitHubSettingsClick = { viewModel.openGitHubModal() }
             )
         },
         bottomBar = {
@@ -147,6 +154,35 @@ fun SmartAgentApp(
                 onSendMessageInCall = { text ->
                     viewModel.submitPrompt(text)
                 }
+            )
+        }
+
+        // DTR Hands-free Voice Assistant Dialog Modal
+        if (isDtrVoiceAssistantActive) {
+            DtrVoiceAssistantDialog(
+                onDismiss = { viewModel.closeDtrVoiceAssistant() },
+                onExecuteAction = { text ->
+                    viewModel.submitPrompt(text)
+                }
+            )
+        }
+
+        // GitHub & Deploy Settings Modal
+        if (isGitHubModalActive) {
+            GitHubAndDeployModal(
+                githubToken = githubToken,
+                githubUser = githubUser,
+                githubRepo = githubRepo,
+                onSaveGitHubConfig = { token, user, repo ->
+                    viewModel.saveGitHubConfig(token, user, repo)
+                },
+                onWipeMemoryClick = {
+                    viewModel.wipeMemory()
+                },
+                onOpenDtrVoiceAssistant = {
+                    viewModel.openDtrVoiceAssistant()
+                },
+                onDismiss = { viewModel.closeGitHubModal() }
             )
         }
     }
