@@ -1,0 +1,6 @@
+{
+  "name": "RepoAgent AI",
+  "description": "Autonomous Multi-Agent Repository Builder & Code Analyzer with Parallel Background Agents",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
