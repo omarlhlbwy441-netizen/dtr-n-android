@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.api.GeminiClient
 import com.example.data.local.AppDatabase
 import com.example.data.local.ChatMessageEntity
+import com.example.data.local.UserPreferencesEntity
 import com.example.data.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -18,6 +19,7 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
 
     private val db = AppDatabase.getInstance(application)
     private val dao = db.chatDao()
+    private val prefDao = db.userPreferencesDao()
 
     private var tts: TextToSpeech? = null
 
@@ -79,8 +81,19 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             // Fallback if TTS not available
         }
 
-        // Load initial default system message or saved database messages
+        // Load initial default system message or saved database messages & preferences
         viewModelScope.launch {
+            // Load Preferences from Room
+            val savedToken = prefDao.getValue("github_token")
+            if (!savedToken.isNullOrBlank()) _githubToken.value = savedToken
+
+            val savedUser = prefDao.getValue("github_user")
+            if (!savedUser.isNullOrBlank()) _githubUser.value = savedUser
+
+            val savedRepo = prefDao.getValue("github_repo")
+            if (!savedRepo.isNullOrBlank()) _githubRepo.value = savedRepo
+
+            // Load Chat Messages
             dao.getAllMessages().collect { entities ->
                 if (entities.isEmpty()) {
                     seedInitialState()
@@ -175,6 +188,11 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
         _githubToken.value = token
         _githubUser.value = user
         _githubRepo.value = repo
+        viewModelScope.launch {
+            prefDao.savePreference(UserPreferencesEntity("github_token", token))
+            prefDao.savePreference(UserPreferencesEntity("github_user", user))
+            prefDao.savePreference(UserPreferencesEntity("github_repo", repo))
+        }
     }
 
     fun wipeMemory() {

@@ -5,9 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ChatMessageEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ChatMessageEntity::class, UserPreferencesEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
+    abstract fun userPreferencesDao(): UserPreferencesDao
 
     companion object {
         @Volatile
@@ -18,7 +19,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "repo_agent_db"
+                    "smart_agent_db"
                 ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
