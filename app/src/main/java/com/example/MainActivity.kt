@@ -57,6 +57,7 @@ fun SmartAgentApp(
     val githubToken by viewModel.githubToken.collectAsState()
     val githubUser by viewModel.githubUser.collectAsState()
     val githubRepo by viewModel.githubRepo.collectAsState()
+    val postgresUrl by viewModel.postgresUrl.collectAsState()
 
     val listState = rememberLazyListState()
 
@@ -173,8 +174,12 @@ fun SmartAgentApp(
                 githubToken = githubToken,
                 githubUser = githubUser,
                 githubRepo = githubRepo,
+                postgresUrl = postgresUrl,
                 onSaveGitHubConfig = { token, user, repo ->
                     viewModel.saveGitHubConfig(token, user, repo)
+                },
+                onSavePostgresConfig = { pgUrl ->
+                    viewModel.savePostgresConfig(pgUrl)
                 },
                 onWipeMemoryClick = {
                     viewModel.wipeMemory()

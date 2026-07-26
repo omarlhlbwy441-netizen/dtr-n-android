@@ -29,7 +29,9 @@ fun GitHubAndDeployModal(
     githubToken: String,
     githubUser: String,
     githubRepo: String,
+    postgresUrl: String = "postgresql://dtr_user:pass@dtr-db.onrender.com/dtr_database",
     onSaveGitHubConfig: (String, String, String) -> Unit,
+    onSavePostgresConfig: (String) -> Unit = {},
     onWipeMemoryClick: () -> Unit,
     onOpenDtrVoiceAssistant: () -> Unit,
     onDismiss: () -> Unit
@@ -37,6 +39,7 @@ fun GitHubAndDeployModal(
     var tokenInput by remember { mutableStateOf(githubToken) }
     var userInput by remember { mutableStateOf(githubUser) }
     var repoInput by remember { mutableStateOf(githubRepo) }
+    var pgUrlInput by remember { mutableStateOf(postgresUrl) }
     var deployPlatform by remember { mutableStateOf("GitHub + Render") }
     var showSuccessToast by remember { mutableStateOf(false) }
 
@@ -46,6 +49,7 @@ fun GitHubAndDeployModal(
             Button(
                 onClick = {
                     onSaveGitHubConfig(tokenInput, userInput, repoInput)
+                    onSavePostgresConfig(pgUrlInput)
                     showSuccessToast = true
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = GoldPrimary),
@@ -69,8 +73,8 @@ fun GitHubAndDeployModal(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "إعدادات GitHub والبحث والنشر المباشر",
-                    fontSize = 17.sp,
+                    text = "إعدادات GitHub وقاعدة بيانات Render PostgreSQL",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -90,7 +94,7 @@ fun GitHubAndDeployModal(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "✓ تم ربط توكن GitHub ومزامنة المسارات تلقائياً",
+                            text = "✓ تم حفظ توكن GitHub وإعدادات Render PostgreSQL وقاعدة البيانات المشتركة بنجاح!",
                             fontSize = 12.sp,
                             color = Color(0xFF22C55E),
                             fontWeight = FontWeight.Bold,
@@ -98,6 +102,52 @@ fun GitHubAndDeployModal(
                         )
                     }
                 }
+
+                // Render Shared PostgreSQL Connection Card
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Storage,
+                                contentDescription = null,
+                                tint = GoldPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "قاعدة بيانات Render PostgreSQL (مشاركة بين عدة مشاريع)",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "يمكن ربط أكثر من خدمة أو تطبيق (Web / Mobile / API) بنفس قاعدة البيانات في Render عبر رابط Connection String الموحد.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // PostgreSQL URL Input
+                OutlinedTextField(
+                    value = pgUrlInput,
+                    onValueChange = { pgUrlInput = it },
+                    label = { Text("رابط قاعدة PostgreSQL في Render (DATABASE_URL)") },
+                    placeholder = { Text("postgresql://user:password@host.render.com/dbname") },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Storage, contentDescription = null, tint = GoldPrimary)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
                 // GitHub Personal Access Token Input
                 OutlinedTextField(

@@ -69,6 +69,9 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private val _githubRepo = MutableStateFlow("dtr-n-fixed")
     val githubRepo: StateFlow<String> = _githubRepo.asStateFlow()
 
+    private val _postgresUrl = MutableStateFlow("postgresql://dtr_user:password@dtr-db.onrender.com/dtr_database")
+    val postgresUrl: StateFlow<String> = _postgresUrl.asStateFlow()
+
     init {
         // Initialize Android TextToSpeech for Arabic voice readout
         try {
@@ -92,6 +95,9 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
 
             val savedRepo = prefDao.getValue("github_repo")
             if (!savedRepo.isNullOrBlank()) _githubRepo.value = savedRepo
+
+            val savedPgUrl = prefDao.getValue("postgres_url")
+            if (!savedPgUrl.isNullOrBlank()) _postgresUrl.value = savedPgUrl
 
             // Load Chat Messages
             dao.getAllMessages().collect { entities ->
@@ -192,6 +198,13 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             prefDao.savePreference(UserPreferencesEntity("github_token", token))
             prefDao.savePreference(UserPreferencesEntity("github_user", user))
             prefDao.savePreference(UserPreferencesEntity("github_repo", repo))
+        }
+    }
+
+    fun savePostgresConfig(url: String) {
+        _postgresUrl.value = url
+        viewModelScope.launch {
+            prefDao.savePreference(UserPreferencesEntity("postgres_url", url))
         }
     }
 
