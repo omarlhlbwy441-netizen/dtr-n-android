@@ -19,17 +19,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.GoldPrimary
 import com.example.ui.theme.StatusGreen
 import com.example.ui.theme.StatusGreenBg
 
 @Composable
 fun TopHeaderBar(
     workspaceName: String = "dtr-no",
-    repoName: String = "omarlhlbwy441-netizen / dtr-n-fixed",
-    branchName: String = "main",
+    projectName: String = "العميل الذكي - dtr-n-fixed",
+    branchName: String = "الفرع الرئيسي",
     liveUrl: String = "https://dtr-no.onrender.com",
     onWorkspaceClick: () -> Unit = {},
-    onRepoClick: () -> Unit = {}
+    onLiveCallClick: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -42,7 +43,7 @@ fun TopHeaderBar(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Row 1: Workspace selector & global actions
+            // Row 1: Workspace selector & Direct Live Call Action
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -57,7 +58,7 @@ fun TopHeaderBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Language,
-                        contentDescription = "Workspace",
+                        contentDescription = "مساحة العمل",
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -71,40 +72,59 @@ fun TopHeaderBar(
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "Select",
+                        contentDescription = "تحديد",
                         modifier = Modifier.size(18.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = {},
-                        modifier = Modifier.size(36.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Direct Live Call Button
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = Color(0xFF15803D),
+                        modifier = Modifier.clickable { onLiveCallClick() }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Call,
+                                contentDescription = "مكالمة مباشرة",
+                                modifier = Modifier.size(16.dp),
+                                tint = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "مكالمة مباشرة",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
+
                     Box(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFFEF08A)),
+                            .background(GoldPrimary),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "O",
+                            text = "A",
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF854D0E)
+                            color = Color.Black
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Row 2: Service Badges
             Row(
@@ -115,7 +135,7 @@ fun TopHeaderBar(
                 // Service Title
                 Column {
                     Text(
-                        text = "WEB SERVICE",
+                        text = "خدمة المساعد الذكي",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp,
@@ -131,7 +151,7 @@ fun TopHeaderBar(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Python 3 Tag
+                // Environment Badges
                 Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant
@@ -144,13 +164,12 @@ fun TopHeaderBar(
                     )
                 }
 
-                // Starter Tag
                 Surface(
                     shape = RoundedCornerShape(6.dp),
                     color = Color(0xFFF3E8FF)
                 ) {
                     Text(
-                        text = "Starter",
+                        text = "مباشر وتلقائي",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF7E22CE),
@@ -161,20 +180,20 @@ fun TopHeaderBar(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Row 3: Repo details & Live Badge
+            // Row 3: Project details & Live Badge
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Code,
-                    contentDescription = "Repo",
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = "مشروع",
                     modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = GoldPrimary
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = repoName,
+                    text = projectName,
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -189,7 +208,7 @@ fun TopHeaderBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.AccountTree,
-                            contentDescription = "Branch",
+                            contentDescription = "فرع",
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -222,7 +241,7 @@ fun TopHeaderBar(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Live",
+                            text = "نشِط الآن",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = StatusGreen

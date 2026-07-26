@@ -1,5 +1,7 @@
 package com.example.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,7 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.MicOff
+import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,23 +25,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.GoldPrimary
 
 @Composable
 fun InputBottomBar(
     promptText: String,
     onPromptChange: (String) -> Unit,
     onSendClick: () -> Unit,
+    attachedFileName: String? = null,
+    onAttachFileClick: () -> Unit = {},
+    onRemoveFileClick: () -> Unit = {},
+    isRecordingVoice: Boolean = false,
+    onVoiceRecordClick: () -> Unit = {},
     isPlanEnabled: Boolean = false,
     onPlanToggle: () -> Unit = {},
-    selectedModel: String = "Economy",
+    selectedModel: String = "الذكاء الاقتصادي",
     onModelSelect: (String) -> Unit = {},
     quickSuggestions: List<String> = listOf(
-        "اصلاح API_BASE والـ fetchAuth في app.html لتسجيل الدخول",
-        "بناء مشروع FastAPI متكامل مع Python API و proxy",
-        "تفعيل الوكلاء التلقائيين للفحص والتكامل المستمر",
-        "ربط نظام الموارد وإعادة ضبط الجلسات اليومي"
+        "إصلاح المصادقة والمسارات في التطبيق تلقائياً",
+        "بناء متجر إلكتروني ذكي مع قاعدة بيانات وتوجيه",
+        "تفعيل الوكلاء المتوازيين للفحص الأمني الشامل",
+        "إضافة زر رفع الملفات ونظام الاتصال الصوتي"
     )
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "micPulse")
+    val micAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "micAlpha"
+    )
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -77,6 +97,86 @@ fun InputBottomBar(
                 }
             }
 
+            // Attached File Pill Indicator
+            attachedFileName?.let { fileName ->
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = GoldPrimary.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, GoldPrimary.copy(alpha = 0.5f)),
+                    modifier = Modifier
+                        .padding(bottom = 6.dp)
+                        .wrapContentWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.AttachFile,
+                            contentDescription = "مرفق",
+                            tint = GoldPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = fileName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "حذف المرفق",
+                            tint = Color.Red,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clickable { onRemoveFileClick() }
+                        )
+                    }
+                }
+            }
+
+            // Voice Recording Banner
+            AnimatedVisibility(visible = isRecordingVoice) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFDC2626).copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, Color(0xFFDC2626).copy(alpha = micAlpha)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFDC2626).copy(alpha = micAlpha))
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "جاري التسجيل الصوتي... تحدث الآن",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
+                        }
+                        Text(
+                            text = "انقر لإيقاف التسجيل ⏹",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.clickable { onVoiceRecordClick() }
+                        )
+                    }
+                }
+            }
+
             // Main Input Container
             Surface(
                 shape = RoundedCornerShape(20.dp),
@@ -94,8 +194,8 @@ fun InputBottomBar(
                         onValueChange = onPromptChange,
                         placeholder = {
                             Text(
-                                text = "Make, test, iterate...",
-                                fontSize = 15.sp,
+                                text = "اكتب طلبك، ارفع ملفاً، أو تحدث صوتياً مع العميل الذكي...",
+                                fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
                         },
@@ -118,17 +218,20 @@ fun InputBottomBar(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            // File Upload / Attach Button
                             IconButton(
-                                onClick = {},
+                                onClick = onAttachFileClick,
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "Add",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    imageVector = Icons.Outlined.AttachFile,
+                                    contentDescription = "رفع ملف",
+                                    tint = if (attachedFileName != null) GoldPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
+
+                            Spacer(modifier = Modifier.width(2.dp))
 
                             // Plan Toggle Pill
                             Surface(
@@ -150,7 +253,7 @@ fun InputBottomBar(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Plan",
+                                        text = "خطة العمل",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -160,7 +263,7 @@ fun InputBottomBar(
 
                             Spacer(modifier = Modifier.width(6.dp))
 
-                            // Economy Model Selector
+                            // Model Selector
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
                                 color = MaterialTheme.colorScheme.surface,
@@ -173,7 +276,7 @@ fun InputBottomBar(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.GridView,
-                                        contentDescription = "Model",
+                                        contentDescription = "النموذج",
                                         modifier = Modifier.size(14.dp),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -195,14 +298,20 @@ fun InputBottomBar(
                         }
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Voice Recording Mic Button
                             IconButton(
-                                onClick = {},
-                                modifier = Modifier.size(32.dp)
+                                onClick = onVoiceRecordClick,
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(
+                                        if (isRecordingVoice) Color(0xFFDC2626).copy(alpha = 0.2f) else Color.Transparent,
+                                        CircleShape
+                                    )
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.Mic,
-                                    contentDescription = "Voice",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    imageVector = if (isRecordingVoice) Icons.Outlined.MicOff else Icons.Outlined.Mic,
+                                    contentDescription = "تسجيل صوتي",
+                                    tint = if (isRecordingVoice) Color(0xFFDC2626) else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
@@ -215,13 +324,13 @@ fun InputBottomBar(
                                     .size(36.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (promptText.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                                        if (promptText.isNotBlank() || attachedFileName != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
                                     )
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.ArrowUpward,
-                                    contentDescription = "Send",
-                                    tint = if (promptText.isNotBlank()) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    contentDescription = "إرسال",
+                                    tint = if (promptText.isNotBlank() || attachedFileName != null) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }

@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "RepoAgent AI"
+rootProject.name = "SmartAgent AI"
 
 include(":app")

@@ -29,8 +29,11 @@ import com.example.ui.theme.StatusGreen
 @Composable
 fun ChatMessageItem(
     message: ChatMessage,
-    onViewCodeClick: (String) -> Unit = {}
+    onViewCodeClick: (String) -> Unit = {},
+    onSpeakTextClick: (String) -> Unit = {}
 ) {
+    var isSpeaking by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,26 +75,62 @@ fun ChatMessageItem(
                     )
                 }
 
-                // Visit URL Pill
-                OutlinedButton(
-                    onClick = { },
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
-                    modifier = Modifier.padding(bottom = 8.dp)
+                // Action Pills Row: Visit URL & Voice Playback
+                Row(
+                    modifier = Modifier.padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Visit",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.Launch,
-                        contentDescription = "Visit",
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Visit URL Pill
+                    OutlinedButton(
+                        onClick = { },
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = "زيارة الرابط",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Default.Launch,
+                            contentDescription = "زيارة المعاينة",
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    // Voice TTS Speaker Button
+                    OutlinedButton(
+                        onClick = {
+                            isSpeaking = !isSpeaking
+                            onSpeakTextClick(message.responseTextAr)
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(
+                            1.dp,
+                            if (isSpeaking) com.example.ui.theme.GoldPrimary else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        ),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = if (isSpeaking) com.example.ui.theme.GoldPrimary.copy(alpha = 0.15f) else Color.Transparent
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (isSpeaking) Icons.Default.Schedule else Icons.Default.Launch,
+                            contentDescription = "قراءة صوتية",
+                            modifier = Modifier.size(16.dp),
+                            tint = if (isSpeaking) com.example.ui.theme.GoldPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = if (isSpeaking) "جاري القراءة..." else "استماع صوتي",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isSpeaking) com.example.ui.theme.GoldPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
 
                 // Newly Built Card ("ما تم بناؤه من جديد")

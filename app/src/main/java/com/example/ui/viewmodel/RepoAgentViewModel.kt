@@ -1,6 +1,7 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import android.speech.tts.TextToSpeech
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.GeminiClient
@@ -10,8 +11,7 @@ import com.example.data.model.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
+import java.util.Locale
 import java.util.UUID
 
 class RepoAgentViewModel(application: Application) : AndroidViewModel(application) {
@@ -19,13 +19,15 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private val db = AppDatabase.getInstance(application)
     private val dao = db.chatDao()
 
+    private var tts: TextToSpeech? = null
+
     private val _promptInput = MutableStateFlow("")
     val promptInput: StateFlow<String> = _promptInput.asStateFlow()
 
     private val _isPlanEnabled = MutableStateFlow(false)
     val isPlanEnabled: StateFlow<Boolean> = _isPlanEnabled.asStateFlow()
 
-    private val _selectedModel = MutableStateFlow("Economy")
+    private val _selectedModel = MutableStateFlow("الذكاء الاقتصادي")
     val selectedModel: StateFlow<String> = _selectedModel.asStateFlow()
 
     private val _selectedCodeToView = MutableStateFlow<String?>(null)
@@ -34,7 +36,32 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
+    // File Upload State
+    private val _attachedFileName = MutableStateFlow<String?>(null)
+    val attachedFileName: StateFlow<String?> = _attachedFileName.asStateFlow()
+
+    private var _attachedFileBytes: ByteArray? = null
+
+    // Voice System State
+    private val _isRecordingVoice = MutableStateFlow(false)
+    val isRecordingVoice: StateFlow<Boolean> = _isRecordingVoice.asStateFlow()
+
+    // Live Voice Call State
+    private val _isLiveCallActive = MutableStateFlow(false)
+    val isLiveCallActive: StateFlow<Boolean> = _isLiveCallActive.asStateFlow()
+
     init {
+        // Initialize Android TextToSpeech for Arabic voice readout
+        try {
+            tts = TextToSpeech(application) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    tts?.language = Locale("ar")
+                }
+            }
+        } catch (e: Exception) {
+            // Fallback if TTS not available
+        }
+
         // Load initial default system message or saved database messages
         viewModelScope.launch {
             dao.getAllMessages().collect { entities ->
@@ -45,6 +72,14 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        try {
+            tts?.stop()
+            tts?.shutdown()
+        } catch (e: Exception) {}
     }
 
     fun onPromptChange(newText: String) {
@@ -67,17 +102,65 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
         _selectedCodeToView.value = null
     }
 
-    fun submitPrompt(promptText: String = _promptInput.value) {
-        if (promptText.isBlank()) return
+    // File Upload Handlers
+    fun attachFile(fileName: String, bytes: ByteArray? = null) {
+        _attachedFileName.value = fileName
+        _attachedFileBytes = bytes
+    }
 
-        val userPrompt = promptText.trim()
+    fun removeAttachedFile() {
+        _attachedFileName.value = null
+        _attachedFileBytes = null
+    }
+
+    // Voice Recording Toggle (Speech-to-Text Simulation)
+    fun toggleVoiceRecording() {
+        _isRecordingVoice.value = !_isRecordingVoice.value
+        if (_isRecordingVoice.value) {
+            viewModelScope.launch {
+                delay(3000) // Simulate listening speech for 3s
+                if (_isRecordingVoice.value) {
+                    _promptInput.value = "قم بفحص وإصلاح ملفات المشروع وتفعيل الوكلاء الصوتيين المباشرين"
+                    _isRecordingVoice.value = false
+                }
+            }
+        }
+    }
+
+    // Live Voice Call Handlers
+    fun openLiveCall() {
+        _isLiveCallActive.value = true
+    }
+
+    fun closeLiveCall() {
+        _isLiveCallActive.value = false
+    }
+
+    // TextToSpeech Playback
+    fun speakText(text: String) {
+        if (text.isBlank()) return
+        try {
+            tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "AgentTTS")
+        } catch (e: Exception) {}
+    }
+
+    fun submitPrompt(promptText: String = _promptInput.value) {
+        val currentFileName = _attachedFileName.value
+        if (promptText.isBlank() && currentFileName == null) return
+
+        var fullUserPrompt = promptText.trim()
+        if (currentFileName != null) {
+            fullUserPrompt += "\n[مرفق ملف: $currentFileName]"
+        }
+
         _promptInput.value = ""
+        removeAttachedFile()
 
         viewModelScope.launch {
             // 1. Add User Message
             val userMsg = ChatMessage(
                 id = UUID.randomUUID().toString(),
-                promptText = userPrompt,
+                promptText = fullUserPrompt,
                 responseTextAr = "",
                 isUser = true
             )
@@ -88,7 +171,7 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 AgentTask(
                     id = UUID.randomUUID().toString(),
                     type = AgentType.PLANNER,
-                    titleAr = "تحليل متطلبات المشهد وتخطيط البنية",
+                    titleAr = "تحليل وتخطيط معمارية العميل الذكي",
                     descriptionAr = "توزيع المهام أوتوماتيكياً على الخدمات والمُوجِّهات",
                     progress = 0.2f,
                     status = AgentStatus.RUNNING
@@ -104,15 +187,15 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 AgentTask(
                     id = UUID.randomUUID().toString(),
                     type = AgentType.CODE_BUILDER,
-                    titleAr = "توليد كود المصادقة وتعديل API_BASE",
-                    descriptionAr = "إصلاح app.html والـ fetchAuth المباشر",
+                    titleAr = "توليد الكود ومعالجة المرفقات الصوتية والبرمجية",
+                    descriptionAr = "إصلاح app.html وتفعيل الاتصال المباشر",
                     progress = 0.1f,
                     status = AgentStatus.RUNNING
                 ),
                 AgentTask(
                     id = UUID.randomUUID().toString(),
                     type = AgentType.SECURITY_AUDITOR,
-                    titleAr = "مراجعة الأمان وتقييد المعدلات والـ Diamond Economy",
+                    titleAr = "مراجعة الأمان والـ Diamond Economy",
                     descriptionAr = "إعادة ضبط الجلسات والموارد يومياً",
                     progress = 0.1f,
                     status = AgentStatus.RUNNING
@@ -122,8 +205,8 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             val aiMsgId = UUID.randomUUID().toString()
             val initialAiMsg = ChatMessage(
                 id = aiMsgId,
-                promptText = userPrompt,
-                responseTextAr = "جاري تشغيل الوكلاء في الخلفية بالتوازي لمعالجة الطلب...",
+                promptText = fullUserPrompt,
+                responseTextAr = "جاري تشغيل الوكلاء الأوتوماتيكيين في الخلفية بالتوازي لمعالجة الطلب والمرفقات...",
                 isUser = false,
                 activeAgents = initialAgents,
                 isAgentBuilding = true
@@ -142,7 +225,7 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                             status = if (isDone) AgentStatus.COMPLETED else AgentStatus.RUNNING,
                             generatedCode = if (isDone && agent.type == AgentType.CODE_BUILDER) {
                                 """
-                                // Generated Fix for app.html login & fetchAuth
+                                // Generated Smart Fix & Audio Call Handler
                                 const API_BASE = 'https://dtr-no.onrender.com/api/dtrn/api';
                                 
                                 async function fetchAuth(endpoint, options = {}) {
@@ -165,26 +248,26 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             }
 
             // 4. Fetch Actual Response from Gemini API
-            val geminiResponse = GeminiClient.generateAgentOrchestration(userPrompt)
+            val geminiResponse = GeminiClient.generateAgentOrchestration(fullUserPrompt)
 
-            // 5. Finalize AI Message with Gemini Response, Newly Built List, and Status
+            // 5. Finalize AI Message with Gemini Response
             updateAiMessage(aiMsgId) { current ->
                 current.copy(
                     responseTextAr = geminiResponse,
                     isAgentBuilding = false,
                     newlyBuiltItems = listOf(
-                        NewlyBuiltItem("تعديل مسار API_BASE", "تعديل app.html ليصل إلى /api/dtrn/api/* عبر Express Proxy :8080"),
-                        NewlyBuiltItem("تحديث fetchAuth", "تمرير التوكن تلقائياً وإعادة المحاولة أوتوماتيكياً عند انقطاع الاتصال"),
+                        NewlyBuiltItem("تحديث المسارات والمرفقات", "معالجة الملف المرفق وتحديث مسارات الـ API أوتوماتيكياً"),
+                        NewlyBuiltItem("تحديث fetchAuth الصوتية", "تكامل النظام الصوتي والاتصال المباشر مع العميل الذكي AI"),
                         NewlyBuiltItem("تكامل uvicorn", "تشغيل uvicorn api.main:app على المنفذ 8000 بوضع Demo mode")
                     ),
                     systemStatuses = listOf(
                         SystemStatusItem("Python API", "متصل DB يعمل على :8000", isOnline = true),
                         SystemStatusItem("Express Proxy", "يعمل على :8080", isOnline = true),
                         SystemStatusItem("Direct Proxy Auth", "تسجيل الدخول متصل ومستقر", isOnline = true),
-                        SystemStatusItem("RTL Luxury Interface", "تظهر بالتصميم الأسود/الذهبي الرخامي مع RTL", isOnline = true)
+                        SystemStatusItem("النظام الصوتي المباشر", "نشِط ومفعل مع العميل الذكي", isOnline = true)
                     ),
                     checkpoints = listOf(
-                        CheckpointLog("Worked for 13 minutes", "", "تم إنشاء 3 إصلاحات وتوليد كود المصادقة المباشر"),
+                        CheckpointLog("Worked for 13 minutes", "", "تم معالجة الطلب والمرفقات وإلغاء كلمة ريبو نهائياً"),
                         CheckpointLog("", "Checkpoint made 34 minutes ago", "تأكيد نقاط الاستعادة لجميع وكلاء البناء والتحليل")
                     )
                 )
@@ -195,21 +278,20 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
     private suspend fun seedInitialState() {
         val initialMessage = ChatMessage(
             id = "initial_demo_msg",
-            promptText = "Fix API_BASE and fallback fetchAuth in app.html for login",
-            responseTextAr = "Fix API_BASE and fallback fetchAuth in app.html for login\nDeployed on July 24, 2026 at 5:23:57 AM GMT+3",
+            promptText = "تأكيد مسارات المصادقة وتفعيل العميل الذكي والنظام الصوتي المباشر",
+            responseTextAr = "أهلاً بك في العميل الذكي AI!\nتم تفعيل الوكلاء المتوازيين بالكامل مع دعم رفع الملفات، النظام الصوتي، والاتصال المباشر.",
             isUser = false,
             newlyBuiltItems = listOf(
                 NewlyBuiltItem("سلسلة التوجيه الكاملة", "Browser → Express :8080 ( /api/dtrn/api/* ) → Python :8000 ( /api/* )"),
-                NewlyBuiltItem("Python workflow", "يشغّل uvicorn api.main:app على منفذ 8000"),
-                NewlyBuiltItem("auto-migration + seed admin", "عند الإقلاع: admin@dtr-n.com / dtrn2026"),
-                NewlyBuiltItem("نظام الموارد", "(sessions/steps/diamonds/code_generations) مع reset يومي"),
-                NewlyBuiltItem("Demo mode", "يعمل بدون قاعدة بيانات بدلاً من الانهيار")
+                NewlyBuiltItem("النظام الصوتي المباشر", "مكالمات صوتية وقراءة نصوص فورية باللغة العربية"),
+                NewlyBuiltItem("رفع الملفات الأوتوماتيكي", "إمكانية إرفاق الأكواد والمستندات بضغطة زر"),
+                NewlyBuiltItem("Demo mode", "يعمل بأعلى كفاءة مع المعالجة التلقائية")
             ),
             systemStatuses = listOf(
                 SystemStatusItem("Python API", "متصل DB يعمل على :8000", isOnline = true),
                 SystemStatusItem("Express Proxy", "يعمل على :8080", isOnline = true),
-                SystemStatusItem("Direct Proxy", "ومباشرة proxy تسجيل الدخول: يعمل عبر الـ", isOnline = true),
-                SystemStatusItem("RTL الواجهة", "تظهر بالتصميم الأسود/الذهبي الرخامي مع RTL", isOnline = true)
+                SystemStatusItem("الاتصال الصوتي المباشر", "نشِط وجاهز للمكالمات", isOnline = true),
+                SystemStatusItem("RTL الواجهة العربية", "تظهر بالتصميم الفاخر الرخامي RTL", isOnline = true)
             ),
             checkpoints = listOf(
                 CheckpointLog("Worked for 13 minutes", "", "تجميع الوكلاء وإصلاح التوجيه تلقائياً"),
@@ -219,7 +301,7 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 AgentTask(
                     id = "ag1",
                     type = AgentType.PLANNER,
-                    titleAr = "تحليل وتوزيع المهام مع المعمارية",
+                    titleAr = "تحليل وتوزيع المهام مع معمارية العميل الذكي",
                     descriptionAr = "تحديد الوكلاء تلقائياً بدلاً من الاستدعاء اليدوي",
                     progress = 1.0f,
                     status = AgentStatus.COMPLETED
@@ -227,12 +309,12 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
                 AgentTask(
                     id = "ag2",
                     type = AgentType.CODE_BUILDER,
-                    titleAr = "توليد كود المصادقة والـ API_BASE",
-                    descriptionAr = "إصلاح app.html والربط بـ Express Proxy",
+                    titleAr = "توليد كود المصادقة وتفعيل رفع الملفات الصوتية",
+                    descriptionAr = "تحديث الواجهات والربط بـ Express Proxy",
                     progress = 1.0f,
                     status = AgentStatus.COMPLETED,
                     generatedCode = """
-                        // app.html API fix
+                        // Smart Agent API fix
                         const API_BASE = 'https://dtr-no.onrender.com/api/dtrn/api';
                         async function fetchAuth(endpoint, options = {}) {
                           const token = localStorage.getItem('token');
@@ -278,7 +360,7 @@ class RepoAgentViewModel(application: Application) : AndroidViewModel(applicatio
             responseTextAr = msg.responseTextAr,
             timestamp = msg.timestamp,
             isUser = msg.isUser,
-            agentsJson = "", // simplified for Room memory/cache
+            agentsJson = "",
             newlyBuiltJson = "",
             systemStatusJson = "",
             checkpointsJson = ""

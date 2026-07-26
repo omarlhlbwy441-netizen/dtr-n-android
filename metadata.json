@@ -1,6 +1,6 @@
 {
-  "name": "RepoAgent AI",
-  "description": "Autonomous Multi-Agent Repository Builder & Code Analyzer with Parallel Background Agents",
+  "name": "العميل الذكي AI",
+  "description": "العميل الذكي - المساعد الأوتوماتيكي لبناء البرمجيات والتطبيقات بالذكاء الاصطناعي",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
