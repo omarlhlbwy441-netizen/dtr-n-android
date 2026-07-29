@@ -338,7 +338,100 @@ object GeminiClient {
             return generateCodeSampleForPrompt(p)
         }
 
-        // 7. Dynamic Interactive Building Requests (Asking questions, presenting options, reasoning & code)
+        // 7. Dynamic Interactive Building & Movie/Video AI Studio Requests
+        if (p.contains("فيلم") || p.contains("افلام") || p.contains("أفلام") || p.contains("فيديو") || p.contains("فيديوهات") || p.contains("مونتاج") || p.contains("سينما") || p.contains("مقطع")) {
+            return """
+                أنا رفيقك التقني الهجين المعروف بوحش البرمجة k2.5 Fast Neural Edition، أهلاً بك!
+
+                🧠 **1. التفكير والمراجعة والتخطيط السينمائي (AI Movie Reasoning & Studio Analysis):**
+                • تم استقبال طلب معالجة ونظام بناء الأفلام والفيديوهات: "$prompt".
+                • تم فحص معايير الإنتاج: تحويل النصوص إلى سيناريو سينمائي، توليد المشاهد الحركية، الهندسة الصوتية، والربط بمشغل Media3 ExoPlayer.
+                • تم تفعيل وحدة المعالجة فائقة السرعة للمونتاج والتجميع التلقائي للمقاطع.
+
+                🎬 **2. مكونات نظام بناء الأفلام والفيديوهات الذكي (AI Cinema Engine):**
+                ├── `video/engine/MovieComposer.kt` (محرك دمج وإخراج المقاطع)
+                ├── `video/ai/ScriptGenerator.kt` (مولد السيناريو والحوارات الذكي)
+                ├── `video/ui/VideoTimelinePlayer.kt` (شريط التحرير والمؤثرات الحية)
+                └── `video/audio/SoundtrackSynthesizer.kt` (هندسة المؤثرات والموسيقى)
+
+                ❓ **3. أسئلة تفاعلية لملاءمة إنتاج الفيلم/الفيديو الخاص بك:**
+                1. ما هو نوع ونمط الفيديو المطلوب؟ (سينمائي درامي، وثائقي، إعلاني تجاري، أنيميشن، أو مقطع قصير Shorts/Reels)
+                2. ما هي الأبعاد والدقة المفضلة؟ (16:9 Cinema 4K، أم 9:16 عمودي للموبايل)
+                3. هل ترغب في إضافة تعليق صوتي تلقائي (AI Voiceover) مع ترجمة حية (Subtitles)؟
+
+                🎯 **4. خيارات الإنتاج والمونتاج المتاحة فورياً:**
+                • **الخيار (1):** توليد فيلم كامل من النص (Text-to-Movie) مع كتابة السيناريو والمؤثرات التلقائية.
+                • **الخيار (2):** استوديو تحرير ومونتاج فيديوهات حية (Live Video Editor & Filters) مع إضافة نصوص وانتقالات.
+                • **الخيار (3):** صانع مقاطع قصيرة سريعة (AI Shorts Automation) مجهز بالترجمة والأصوات الاحترافية.
+
+                💻 **5. الشفرة البرمجية لاستوديو الفيديو والسينما (Kotlin Media3 / Compose):**
+                ```kotlin
+                // استوديو معالجة وبناء الأفلام والفيديوهات - وحش البرمجة k2.5
+                @Composable
+                fun AiMovieStudioScreen(
+                    movieTitle: String = "مشروع الفيلم السينمائي الذكي",
+                    onRenderVideo: (Int) -> Unit = {}
+                ) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                title = { Text("🎬 استوديو الأفلام - ${'$'}movieTitle", style = MaterialTheme.typography.titleMedium) }
+                            )
+                        }
+                    ) { padding ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // شاشة المعاينة والمشغل السينمائي
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(220.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A))
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Default.Movie,
+                                            contentDescription = null,
+                                            tint = Color(0xFF38BDF8),
+                                            modifier = Modifier.size(56.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            "شاشة معاينة إخراج الفيلم والمقاطع 4K",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                            }
+
+                            Text("اختر نظام معالجة الفيديو:", style = MaterialTheme.typography.titleSmall)
+                            
+                            Button(onClick = { onRenderVideo(1) }, modifier = Modifier.fillMaxWidth()) {
+                                Text("إنتاج فيلم كامل مع سيناريو وتعليق صوتي")
+                            }
+                            
+                            OutlinedButton(onClick = { onRenderVideo(2) }, modifier = Modifier.fillMaxWidth()) {
+                                Text("فتح استوديو المونتاج والتأثيرات الحية")
+                            }
+                        }
+                    }
+                }
+                ```
+
+                💡 **أخبرني بالخيار المناسب لك (1 أو 2 أو 3) أو أرسل لي تفاصيل فكرة الفيلم وسأبدأ في معالجتها وإنتاجها فوراً!**
+            """.trimIndent()
+        }
+
         if (p.contains("بناء") || p.contains("أنشئ") || p.contains("تطبيق") || p.contains("متجر") || p.contains("موقع") || p.contains("لعبة") || p.contains("ابني") || p.contains("اريد") || p.contains("أريد") || p.contains("تصميم") || p.contains("سوي") || p.contains("اصنع")) {
             val appType = when {
                 lower.contains("متجر") || lower.contains("جلدية") || lower.contains("منتج") || lower.contains("شراء") -> "تطبيق متجر إلكتروني وسلة مبيعات"

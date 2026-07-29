@@ -51,6 +51,16 @@ fun HybridSystemsControlCenter(
     val features = remember {
         listOf(
             SystemFeature(
+                id = "ai_movie_video_studio",
+                titleAr = "استوديو بناء الأفلام والفيديوهات (AI Movie Studio)",
+                subtitleAr = "مونتاج وتوليد مقاطع سينمائية، سيناريو ذكي، وتعليق صوتي بالذكاء الاصطناعي",
+                categoryAr = "إنتاج الوسائط والأفلام",
+                icon = Icons.Default.Movie,
+                isOnline = true,
+                detailsAr = "نظام سينمائي متكامل لتوليد الأفلام والمقاطع الترويجية، كتابة السيناريو، تركيب الأصوات والترجمة الحية، وتحرير الفيديوهات المباشر 4K.",
+                actionTextAr = "فتح استوديو الأفلام"
+            ),
+            SystemFeature(
                 id = "google_drive",
                 titleAr = "ربط Google Drive والنسخ السحابي",
                 subtitleAr = "مزامنة المستندات، ملفات الكود، وتخزين الأصول بالزمن الفعلي",
@@ -139,7 +149,7 @@ fun HybridSystemsControlCenter(
         )
     }
 
-    val categories = listOf("الكل", "التخزين السحابي", "التطوير والنشر", "الاستضافة والخدمات", "البحث والمعرفة", "محركات الذكاء الاصطناعي")
+    val categories = listOf("الكل", "إنتاج الوسائط والأفلام", "التخزين السحابي", "التطوير والنشر", "الاستضافة والخدمات", "البحث والمعرفة", "محركات الذكاء الاصطناعي")
 
     val filteredFeatures = features.filter { feature ->
         (activeTab == "الكل" || feature.categoryAr == activeTab) &&
@@ -377,6 +387,28 @@ fun HybridSystemsControlCenter(
                     Text(feature.detailsAr, fontSize = 13.sp)
 
                     when (feature.id) {
+                        "ai_movie_video_studio" -> {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("🎬 خيارات استوديو الأفلام والفيديوهات السريعة:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Button(
+                                        onClick = { activeDialogFeature = null },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("توليد فيلم سينمائي 4K بنظام النص إلى سيناريو")
+                                    }
+                                    OutlinedButton(
+                                        onClick = { activeDialogFeature = null },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("فتح شريط المونتاج وتركيب الأصوات والترجمة")
+                                    }
+                                }
+                            }
+                        }
                         "google_drive" -> {
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
