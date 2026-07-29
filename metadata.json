@@ -1,0 +1,6 @@
+{
+  "name": "وحش البرمجة k1.0",
+  "description": "تطبيق وحش البرمجة k1.0 - الإصدار الأول الشامل بإمكانيات جبارة وموارد مفتوحة: Google Drive، GitHub، منصات الاستضافة، شاشة عرض المعاينة الحية، وبحث كتب ومكتبات وتصفح نتائج الإنترنت الحية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
