@@ -96,7 +96,7 @@ fun SmartAgentApp(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopHeaderBar(
-                projectName = "وحش البرمجة"
+                projectName = "وحش البرمجة k2.5 Neural"
             )
         },
         bottomBar = {

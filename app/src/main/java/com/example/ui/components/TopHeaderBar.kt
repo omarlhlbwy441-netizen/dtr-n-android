@@ -24,7 +24,7 @@ import com.example.ui.theme.StatusGreenBg
 
 @Composable
 fun TopHeaderBar(
-    projectName: String = "وحش البرمجة k1.0"
+    projectName: String = "وحش البرمجة k2.5 Neural"
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),

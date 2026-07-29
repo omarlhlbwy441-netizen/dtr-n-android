@@ -46,13 +46,13 @@ fun UserProfileAndOptionsMenu(
     onDismiss: () -> Unit
 ) {
     val userProjects = listOf(
-        UserProject("p1", "الوحش البرمجي", "تطبيق الهجين الموحد - الذكاء الاصطناعي ومحرك الألعاب", isCurrent = true),
-        UserProject("p2", "dtr-no (العميل الذكي)", "مشروع المعاينة والمزامنة السحابية", isCurrent = false),
-        UserProject("p3", "محرك الألعاب والفيزياء 3D", "نظام الفيزياء والأصول الصوتية بالزمن الفعلي", isCurrent = false),
-        UserProject("p4", "محلل الأكواد الذكي Kimi AI", "معالج الأكواد التلقائي والمصادقة", isCurrent = false)
+        UserProject("p1", "وحش البرمجة k2.5", "تطبيق الذكاء الاصطناعي الأسرع - المحرك التفاعلي k2.5", isCurrent = true),
+        UserProject("p2", "dtr-n-android", "مستودع أندرويد الهجين الشامل", isCurrent = false),
+        UserProject("p3", "dtr-n-fixed", "مستودع المزامنة والبناء المستقر", isCurrent = false),
+        UserProject("p4", "محلل الأكواد الذكي Kimi AI Engine", "معالج الأكواد التلقائي والذاكرة سريعة الاستجابة", isCurrent = false)
     )
 
-    var selectedPlan by remember { mutableStateOf("خطة الوحش البرمجي (VIP Ultra)") }
+    var selectedPlan by remember { mutableStateOf("خطة وحش البرمجة (VIP Ultra k2.5)") }
     var showUpgradeDialog by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
